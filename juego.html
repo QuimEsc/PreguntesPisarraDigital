@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joc de Preguntes</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header id="marcador"></header>
+
+    <main id="juego-container" class="container">
+        <div id="pregunta-wrapper">
+            <h2 id="pregunta">Carregant preguntes...</h2>
+        </div>
+        <div id="opciones">
+            </div>
+    </main>
+
+    <div id="loading-overlay" class="overlay visible">
+        <div class="spinner"></div>
+        <p>Connectant amb Google Sheets...</p>
+    </div>
+
+    <div id="podio-overlay" class="overlay">
+        <div class="podio">
+            <h2>🎉 Resultats Finals 🎉</h2>
+            <div class="puesto" id="puesto-2">
+                <div class="lugar">2n</div>
+                <div class="nombre"></div>
+                <div class="puntos"></div>
+            </div>
+            <div class="puesto" id="puesto-1">
+                <div class="lugar">1r</div>
+                <div class="nombre"></div>
+                <div class="puntos"></div>
+            </div>
+            <div class="puesto" id="puesto-3">
+                <div class="lugar">3r</div>
+                <div class="nombre"></div>
+                <div class="puntos"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/sheets.js"></script>
+    <script src="js/juego.js"></script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+/* Estilos generales y variables */
+:root {
+    --color-fondo: #f0f2f5;
+    --color-texto: #333;
+    --color-primario: #007bff;
+    --color-correcto: #28a745;
+    --color-incorrecto: #dc3545;
+    --sombra-caja: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container {
+    width: 90%;
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: var(--sombra-caja);
+    text-align: center;
+}
+
+h1, h2 {
+    margin-bottom: 1.5rem;
+    color: var(--color-primario);
+}
+
+/* Página de Grupos (index.html) */
+#lista-grupos {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.grupo-input {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.grupo-input label {
+    font-weight: bold;
+    flex-basis: 80px;
+}
+
+.grupo-input input {
+    flex-grow: 1;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.controles {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    color: white;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+#btn-add, #btn-remove {
+    background-color: #6c757d;
+    min-width: 50px;
+}
+
+#btn-enviar {
+    background-color: var(--color-primario);
+    width: 100%;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Página del Juego (juego.html) */
+#marcador {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.grupo-marcador {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    color: white;
+    text-align: center;
+    min-width: 120px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.grupo-marcador.turno-actual {
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+}
+
+.grupo-nombre {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.grupo-puntos {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+#pregunta-wrapper {
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 10px;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+#pregunta {
+    color: white;
+    font-size: 1.8rem;
+}
+
+#opciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.opcion {
+    background-color: var(--color-primario);
+    color: white;
+    padding: 1.5rem;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    user-select: none; /* Evita selección de texto */
+}
+
+.opcion:hover {
+    opacity: 0.9;
+}
+
+.opcion.correcta {
+    background-color: var(--color-correcto) !important;
+}
+
+.opcion.incorrecta {
+    background-color: var(--color-incorrecto) !important;
+}
+
+.opcion.disabled {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* Overlays (Carga y Podio) */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    color: white;
+    flex-direction: column;
+}
+
+.overlay.visible {
+    display: flex;
+}
+
+.spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid var(--color-primario);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Podio */
+.podio {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    height: 400px;
+}
+
+.podio h2 {
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.5rem;
+    color: #ffd700;
+}
+
+.puesto {
+    background-color: var(--color-primario);
+    width: 150px;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 10px 10px 0 0;
+    opacity: 0;
+    transform: translateY(100%);
+    animation: subir 0.5s forwards;
+}
+
+#puesto-1 { height: 300px; background-color: #ffd700; animation-delay: 0.8s; }
+#puesto-2 { height: 200px; background-color: #c0c0c0; animation-delay: 0.4s; }
+#puesto-3 { height: 150px; background-color: #cd7f32; animation-delay: 0s; }
+
+.puesto .lugar { font-size: 2rem; font-weight: bold; }
+.puesto .nombre { font-size: 1.2rem; margin: 0.5rem 0; font-weight: bold; }
+.puesto .puntos { font-size: 1.5rem; }
+
+@keyframes subir {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        padding: 1.5rem;
+    }
+    
+    #pregunta {
+        font-size: 1.5rem;
+    }
+
+    .opcion {
+        font-size: 1rem;
+        padding: 1rem;
+    }
+
+    .podio {
+        transform: scale(0.8);
+    }
+}
+
+@media (max-width: 480px) {
+    #marcador {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #opciones {
+        grid-template-columns: 1fr;
+    }
+
+    .podio {
+        transform: scale(0.6);
+    }
+    .podio h2 {
+        font-size: 2rem;
+    }
+}

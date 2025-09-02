@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuració de Grups</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Cree els grups</h1>
+        <div id="lista-grupos">
+            <div class="grupo-input">
+                <label for="grupo-1">Grup 1:</label>
+                <input type="text" id="grupo-1" class="nombre-grupo" maxlength="25" placeholder="Nom del grup 1">
+            </div>
+            <div class="grupo-input">
+                <label for="grupo-2">Grup 2:</label>
+                <input type="text" id="grupo-2" class="nombre-grupo" maxlength="25" placeholder="Nom del grup 2">
+            </div>
+        </div>
+        <div class="controles">
+            <button id="btn-add">+</button>
+            <button id="btn-remove">-</button>
+        </div>
+        <button id="btn-enviar">Enviar</button>
+    </div>
+
+    <script src="js/grupos.js"></script>
+</body>
+</html>
