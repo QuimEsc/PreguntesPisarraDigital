@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const preguntaWrapper = document.getElementById('pregunta-wrapper');
     const loadingOverlay = document.getElementById('loading-overlay');
     const podioOverlay = document.getElementById('podio-overlay');
+    const timerText = document.getElementById('timer-text');
+    const timerProgress = document.getElementById('timer-progress');
+    const bonusRachaEl = document.getElementById('bonus-racha');
 
     // Estado del juego
     let preguntas = [];
@@ -14,9 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let turnoActualIndex = 0;
     const COLORES_GRUPOS = ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#1abc9c', '#e67e22', '#34495e'];
 
-    /**
-     * Inicia el juego.
-     */
+    // Variables del temporizador
+    let timerInterval;
+    let tiempoRestante;
+    let tiempoMaximoPregunta;
+    let startTime;
+
     async function init() {
         const nombresGruposJSON = localStorage.getItem('gruposJuego');
         if (!nombresGruposJSON) {
@@ -26,7 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const nombresGrupos = JSON.parse(nombresGruposJSON);
-        puntuaciones = nombresGrupos.map(nombre => ({ nombre, puntos: 0 }));
+        // Añadimos el contador de racha a cada grupo
+        puntuaciones = nombresGrupos.map(nombre => ({ nombre, puntos: 0, racha: 0 }));
 
         renderMarcador();
 
@@ -38,15 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Barajar preguntas para que cada juego sea diferente
         preguntas.sort(() => Math.random() - 0.5);
-
         mostrarSiguientePregunta();
     }
 
-    /**
-     * Muestra el marcador con las puntuaciones.
-     */
     function renderMarcador() {
         marcadorDiv.innerHTML = '';
         puntuaciones.forEach((grupo, index) => {
@@ -60,13 +62,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="grupo-nombre">${grupo.nombre}</div>
                 <div class="grupo-puntos">${grupo.puntos}</div>
             `;
+            // Añadir indicador de racha si es mayor que 1
+            if (grupo.racha > 1) {
+                const rachaDiv = document.createElement('div');
+                rachaDiv.classList.add('racha-contador');
+                rachaDiv.textContent = `x${grupo.racha}`;
+                grupoDiv.appendChild(rachaDiv);
+            }
             marcadorDiv.appendChild(grupoDiv);
         });
     }
 
-    /**
-     * Muestra la pregunta y opciones actuales.
-     */
     function mostrarSiguientePregunta() {
         if (preguntaActualIndex >= preguntas.length) {
             finalizarJuego();
@@ -88,19 +94,58 @@ document.addEventListener('DOMContentLoaded', () => {
             opcionesDiv.appendChild(opcionBtn);
         });
         
+        tiempoMaximoPregunta = preguntaActual.tiempo;
+        startTimer();
         renderMarcador();
     }
 
-    /**
-     * Procesa la respuesta seleccionada por el usuario.
-     * @param {number} opcionSeleccionada - El número de la opción (1-4).
-     */
-    function manejarRespuesta(opcionSeleccionada) {
+    function startTimer() {
+        clearInterval(timerInterval); // Limpiar cualquier temporizador anterior
+        tiempoRestante = tiempoMaximoPregunta;
+        startTime = Date.now();
+        
+        timerText.textContent = tiempoRestante;
+        timerProgress.style.background = `conic-gradient(var(--color-primario) 360deg, #e9ecef 0deg)`;
+
+        timerInterval = setInterval(() => {
+            const tiempoTranscurrido = (Date.now() - startTime) / 1000;
+            tiempoRestante = Math.ceil(tiempoMaximoPregunta - tiempoTranscurrido);
+            timerText.textContent = tiempoRestante;
+
+            const grados = (tiempoRestante / tiempoMaximoPregunta) * 360;
+            timerProgress.style.background = `conic-gradient(var(--color-primario) ${grados}deg, #e9ecef 0deg)`;
+
+            if (tiempoRestante <= 0) {
+                tiempoAgotado();
+            }
+        }, 100);
+    }
+    
+    function tiempoAgotado() {
+        clearInterval(timerInterval);
+        puntuaciones[turnoActualIndex].racha = 0; // Se rompe la racha
+        
         const preguntaActual = preguntas[preguntaActualIndex];
         const respuestaCorrecta = parseInt(preguntaActual.correcta);
         const opciones = opcionesDiv.children;
 
-        // Deshabilitar más clics
+        for (let opcion of opciones) {
+            opcion.classList.add('disabled');
+        }
+        opciones[respuestaCorrecta - 1].classList.add('correcta'); // Mostrar la correcta
+
+        setTimeout(pasarSiguienteTurno, 2000);
+    }
+
+    function manejarRespuesta(opcionSeleccionada) {
+        clearInterval(timerInterval);
+        const tiempoTardado = (Date.now() - startTime) / 1000;
+        
+        const preguntaActual = preguntas[preguntaActualIndex];
+        const respuestaCorrecta = parseInt(preguntaActual.correcta);
+        const opciones = opcionesDiv.children;
+        const grupoActual = puntuaciones[turnoActualIndex];
+
         for (let opcion of opciones) {
             opcion.classList.add('disabled');
         }
@@ -108,34 +153,53 @@ document.addEventListener('DOMContentLoaded', () => {
         const botonSeleccionado = opciones[opcionSeleccionada - 1];
 
         if (opcionSeleccionada === respuestaCorrecta) {
-            puntuaciones[turnoActualIndex].puntos++;
+            // --- CÁLCULO DE PUNTUACIÓN ---
+            // 1. Puntos por velocidad (Fórmula dinámica)
+            const puntosBase = 500 + Math.round(500 * (1 - (tiempoTardado / tiempoMaximoPregunta)));
+            
+            // 2. Aumentar racha
+            grupoActual.racha++;
+            
+            // 3. Bonus por racha (creciente: +50, +100, +150...)
+            let bonusRacha = 0;
+            if (grupoActual.racha > 1) {
+                bonusRacha = (grupoActual.racha - 1) * 50;
+                mostrarBonus(bonusRacha);
+            }
+            
+            // 4. Puntuación total
+            const puntosGanados = puntosBase + bonusRacha;
+            grupoActual.puntos += puntosGanados;
+            
             botonSeleccionado.classList.add('correcta');
         } else {
+            grupoActual.racha = 0; // Romper la racha
             botonSeleccionado.classList.add('incorrecta');
-            // Mostrar siempre la correcta
             opciones[respuestaCorrecta - 1].classList.add('correcta');
         }
 
         renderMarcador();
-
-        setTimeout(() => {
-            preguntaActualIndex++;
-            turnoActualIndex = (turnoActualIndex + 1) % puntuaciones.length;
-            mostrarSiguientePregunta();
-        }, 1500); // Aumentado a 1.5s para dar tiempo a ver la respuesta
+        setTimeout(pasarSiguienteTurno, 2000);
     }
 
-    /**
-     * Finaliza el juego, muestra el podio y guarda las puntuaciones.
-     */
+    function mostrarBonus(bonus) {
+        bonusRachaEl.textContent = `+${bonus} Racha!`;
+        bonusRachaEl.classList.add('show');
+        setTimeout(() => {
+            bonusRachaEl.classList.remove('show');
+        }, 1500);
+    }
+
+    function pasarSiguienteTurno() {
+        preguntaActualIndex++;
+        turnoActualIndex = (turnoActualIndex + 1) % puntuaciones.length;
+        mostrarSiguientePregunta();
+    }
+
     function finalizarJuego() {
-        // Ocultar el contenedor del juego
         document.getElementById('juego-container').style.display = 'none';
-        
-        // Ordenar puntuaciones de mayor a menor
         puntuaciones.sort((a, b) => b.puntos - a.puntos);
         
-        // Asignar al podio
         const puestos = [
             document.querySelector('#puesto-1'),
             document.querySelector('#puesto-2'),
@@ -150,11 +214,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         podioOverlay.classList.add('visible');
-
-        // Guardar las puntuaciones en Google Sheets
         SheetService.guardarPuntuaciones(puntuaciones);
     }
     
-    // Iniciar el juego
     init();
 });
