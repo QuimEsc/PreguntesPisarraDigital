@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joc de Preguntes</title>
     <link rel="stylesheet" href="css/styles.css">
+
+    <script>
+        MathJax = {
+          tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']]
+          },
+          svg: {
+            fontCache: 'global'
+          }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 </head>
 <body>
     <header id="marcador"></header>
@@ -26,7 +40,7 @@
 
     <div id="loading-overlay" class="overlay visible">
         <div class="spinner"></div>
-        <p>Connectant amb Google Sheets...</p>
+        <p>Carregant preguntes desde el servidor...</p>
     </div>
 
     <div id="podio-overlay" class="overlay">
