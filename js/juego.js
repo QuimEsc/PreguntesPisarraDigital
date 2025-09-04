@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const nombresGrupos = JSON.parse(nombresGruposJSON);
-        // Añadimos el contador de racha a cada grupo
         puntuaciones = nombresGrupos.map(nombre => ({ nombre, puntos: 0, racha: 0 }));
 
         renderMarcador();
@@ -62,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="grupo-nombre">${grupo.nombre}</div>
                 <div class="grupo-puntos">${grupo.puntos}</div>
             `;
-            // Añadir indicador de racha si es mayor que 1
             if (grupo.racha > 1) {
                 const rachaDiv = document.createElement('div');
                 rachaDiv.classList.add('racha-contador');
@@ -83,16 +81,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const colorTurno = COLORES_GRUPOS[turnoActualIndex % COLORES_GRUPOS.length];
         
         preguntaWrapper.style.backgroundColor = colorTurno;
-        preguntaEl.textContent = preguntaActual.pregunta;
+        // MODIFICACIÓN: Usar innerHTML para interpretar etiquetas HTML
+        preguntaEl.innerHTML = preguntaActual.pregunta;
 
         opcionesDiv.innerHTML = '';
         preguntaActual.opciones.forEach((opcion, index) => {
             const opcionBtn = document.createElement('div');
             opcionBtn.classList.add('opcion');
-            opcionBtn.textContent = opcion;
+            // MODIFICACIÓN: Usar innerHTML para las opciones también
+            opcionBtn.innerHTML = opcion;
             opcionBtn.addEventListener('click', () => manejarRespuesta(index + 1));
             opcionesDiv.appendChild(opcionBtn);
         });
+        
+        // MODIFICACIÓN: Pedir a MathJax que renderice el nuevo contenido
+        // Se comprueba que la librería MathJax ya esté cargada en la ventana
+        if (window.MathJax) {
+            MathJax.typesetPromise([preguntaWrapper, opcionesDiv]).catch((err) => {
+                console.error('Error al renderitzar MathJax:', err);
+            });
+        }
         
         tiempoMaximoPregunta = preguntaActual.tiempo;
         startTimer();
@@ -100,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startTimer() {
-        clearInterval(timerInterval); // Limpiar cualquier temporizador anterior
+        clearInterval(timerInterval);
         tiempoRestante = tiempoMaximoPregunta;
         startTime = Date.now();
         
@@ -123,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function tiempoAgotado() {
         clearInterval(timerInterval);
-        puntuaciones[turnoActualIndex].racha = 0; // Se rompe la racha
+        puntuaciones[turnoActualIndex].racha = 0;
         
         const preguntaActual = preguntas[preguntaActualIndex];
         const respuestaCorrecta = parseInt(preguntaActual.correcta);
@@ -132,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let opcion of opciones) {
             opcion.classList.add('disabled');
         }
-        opciones[respuestaCorrecta - 1].classList.add('correcta'); // Mostrar la correcta
+        opciones[respuestaCorrecta - 1].classList.add('correcta');
 
         setTimeout(pasarSiguienteTurno, 2000);
     }
@@ -153,27 +161,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const botonSeleccionado = opciones[opcionSeleccionada - 1];
 
         if (opcionSeleccionada === respuestaCorrecta) {
-            // --- CÁLCULO DE PUNTUACIÓN ---
-            // 1. Puntos por velocidad (Fórmula dinámica)
             const puntosBase = 500 + Math.round(500 * (1 - (tiempoTardado / tiempoMaximoPregunta)));
-            
-            // 2. Aumentar racha
             grupoActual.racha++;
-            
-            // 3. Bonus por racha (creciente: +50, +100, +150...)
             let bonusRacha = 0;
             if (grupoActual.racha > 1) {
                 bonusRacha = (grupoActual.racha - 1) * 50;
                 mostrarBonus(bonusRacha);
             }
-            
-            // 4. Puntuación total
             const puntosGanados = puntosBase + bonusRacha;
             grupoActual.puntos += puntosGanados;
-            
             botonSeleccionado.classList.add('correcta');
         } else {
-            grupoActual.racha = 0; // Romper la racha
+            grupoActual.racha = 0;
             botonSeleccionado.classList.add('incorrecta');
             opciones[respuestaCorrecta - 1].classList.add('correcta');
         }
